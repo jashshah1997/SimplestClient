@@ -47,8 +47,8 @@
     <ImplicitlyExpandDesignTimeFacades>false</ImplicitlyExpandDesignTimeFacades>
   </PropertyGroup>
   <ItemGroup>
-     <Compile Include="Assets\NetworkedClient.cs" />
      <Compile Include="Assets\GameSystemManager.cs" />
+     <Compile Include="Assets\NetworkedClient.cs" />
  <Reference Include="UnityEngine">
  <HintPath>D:/Program Files/2020.2.0f1/Editor/Data/Managed/UnityEngine/UnityEngine.dll</HintPath>
  </Reference>
