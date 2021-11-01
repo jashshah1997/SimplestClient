@@ -11,6 +11,10 @@ public class GameSystemManager : MonoBehaviour
     GameObject toggleLogin;
     GameObject toggleCreate;
     GameObject networkedClient;
+    GameObject findGameSessionButton;
+    GameObject placeholderGameButton;
+    GameObject infoText1;
+    GameObject infoText2;
 
     // Start is called before the first frame update
     void Start()
@@ -31,11 +35,23 @@ public class GameSystemManager : MonoBehaviour
                 toggleCreate = go;
             else if (go.name == "NetworkedClient")
                 networkedClient = go;
+            else if (go.name == "FindGameSessionButton")
+                findGameSessionButton = go;
+            else if (go.name == "PlaceholderGameButton")
+                placeholderGameButton = go;
+            else if (go.name == "InfoText1")
+                infoText1 = go;
+            else if (go.name == "InfoText2")
+                infoText2 = go;
         }
 
         buttonSubmit.GetComponent<Button>().onClick.AddListener(SubmitButtonPressed);
         toggleLogin.GetComponent<Toggle>().onValueChanged.AddListener(ToggleLoginValueChanged);
         toggleCreate.GetComponent<Toggle>().onValueChanged.AddListener(ToggleCreateValueChanged);
+        findGameSessionButton.GetComponent<Button>().onClick.AddListener(FindGameSessionButtonPressed);
+        placeholderGameButton.GetComponent<Button>().onClick.AddListener(PlaceholderGameButtonPressed);
+
+        ChangeGameState(GameStates.Login);
     }
 
     // Update is called once per frame
@@ -44,7 +60,7 @@ public class GameSystemManager : MonoBehaviour
         
     }
 
-    public void SubmitButtonPressed()
+    private void SubmitButtonPressed()
     {
         Debug.Log("ButtonPressed");
         string username = inputFieldUserName.GetComponent<InputField>().text;
@@ -62,32 +78,69 @@ public class GameSystemManager : MonoBehaviour
         networkedClient.GetComponent<NetworkedClient>().SendMessageToHost(message_to_server);
     }
 
-    public void ToggleCreateValueChanged(bool newValue)
+    private void ToggleCreateValueChanged(bool newValue)
     {
         toggleLogin.GetComponent<Toggle>().SetIsOnWithoutNotify(!newValue);
     }
 
-    public void ToggleLoginValueChanged(bool newValue)
+    private void ToggleLoginValueChanged(bool newValue)
     {
         toggleCreate.GetComponent<Toggle>().SetIsOnWithoutNotify(!newValue);
     }
+
+    private void PlaceholderGameButtonPressed()
+    {
+        networkedClient.GetComponent<NetworkedClient>().SendMessageToHost(ClientToServerSignifiers.TicTacToePlay + "");
+
+    }
+
+    private void FindGameSessionButtonPressed()
+    {
+        networkedClient.GetComponent<NetworkedClient>().SendMessageToHost(ClientToServerSignifiers.AddToGameSessionQueue + "");
+        ChangeGameState(GameStates.WaitingForMatch);
+    }
+
+    public void ChangeGameState(int newState)
+    {
+        inputFieldUserName.SetActive(false);
+        inputFieldPassword.SetActive(false);
+        buttonSubmit.SetActive(false);
+        toggleLogin.SetActive(false);
+        toggleCreate.SetActive(false);
+        findGameSessionButton.SetActive(false);
+        placeholderGameButton.SetActive(false);
+        infoText1.SetActive(false);
+        infoText2.SetActive(false);
+
+        if (newState == GameStates.Login)
+        {
+            inputFieldUserName.SetActive(true);
+            inputFieldPassword.SetActive(true);
+            buttonSubmit.SetActive(true);
+            toggleLogin.SetActive(true);
+            toggleCreate.SetActive(true);
+            infoText1.SetActive(true);
+            infoText2.SetActive(true);
+        }
+        else if (newState == GameStates.MainMenu)
+        {
+            findGameSessionButton.SetActive(true);
+        }
+        else if (newState == GameStates.WaitingForMatch)
+        {
+
+        }
+        else if (newState == GameStates.PlayingTicTacToe)
+        {
+            placeholderGameButton.SetActive(true);
+        }
+    }
 }
-public static class ClientToServerSignifiers
+
+public static class GameStates
 {
     public const int Login = 1;
-    public const int CreateAccount = 2;
-
-}
-
-public static class ServerToClientSignifiers
-{
-    public const int LoginResponse = 1;
-}
-
-public static class LoginResponses
-{
-    public const int Success = 1;
-    public const int FailureNameInUse = 2;
-    public const int FailureNameNotFound = 3;
-    public const int FailureIncorrectPassword = 4;
+    public const int MainMenu = 2;
+    public const int WaitingForMatch = 3;
+    public const int PlayingTicTacToe = 4;
 }
