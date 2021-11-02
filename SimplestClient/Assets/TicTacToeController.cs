@@ -5,6 +5,8 @@ using UnityEngine;
 public class TicTacToeController : MonoBehaviour
 {
     private TileController[] tiles;
+    public bool isMyTurn = false;
+
     // Start is called before the first frame update
     void Start()
     {

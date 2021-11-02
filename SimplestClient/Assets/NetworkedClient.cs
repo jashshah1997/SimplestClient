@@ -141,7 +141,16 @@ public class NetworkedClient : MonoBehaviour
             }
 
             ticTacToeController.GetComponent<TicTacToeController>().SetPlayerType(playerTypeResponse);
-            gameSystemManager.GetComponent<GameSystemManager>().ChangeGameState(GameStates.PlayingTicTacToe);
+
+            // Player 'Circle' Goes first
+            if (playerTypeResponse == SessionStartedResponses.CirclesPlayer)
+            {
+                gameSystemManager.GetComponent<GameSystemManager>().ChangeGameState(GameStates.PlayingTicTacToe);
+            } 
+            else
+            {
+                gameSystemManager.GetComponent<GameSystemManager>().ChangeGameState(GameStates.WaitingTicTacToe);
+            }
         }
         else if (signifier == ServerToClientSignifiers.OpponentTicTacToePlay)
         {

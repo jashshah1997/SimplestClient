@@ -32,7 +32,14 @@ public class TileController : MonoBehaviour, IPointerClickHandler
 
     public void OnPointerClick(PointerEventData eventData)
     {
+        // Check if its my turn
+        if (!GetComponentInParent<TicTacToeController>().isMyTurn)
+            return;
+
         ChangeTileState(playerType);
+
+        // My turn finished
+        GetComponentInParent<TicTacToeController>().isMyTurn = false;
     }
 
     private void ChangeTileState(int newState)

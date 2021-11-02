@@ -15,6 +15,7 @@ public class GameSystemManager : MonoBehaviour
     GameObject placeholderGameButton;
     GameObject infoText1;
     GameObject infoText2;
+    GameObject ticTacToeController;
 
     // Start is called before the first frame update
     void Start()
@@ -43,6 +44,8 @@ public class GameSystemManager : MonoBehaviour
                 infoText1 = go;
             else if (go.name == "InfoText2")
                 infoText2 = go;
+            else if (go.name == "TicTacToeController")
+                ticTacToeController = go;
         }
 
         buttonSubmit.GetComponent<Button>().onClick.AddListener(SubmitButtonPressed);
@@ -112,6 +115,9 @@ public class GameSystemManager : MonoBehaviour
         infoText1.SetActive(false);
         infoText2.SetActive(false);
 
+        // TODO: Uncomment this later
+        // ticTacToeController.SetActive(false);
+
         if (newState == GameStates.Login)
         {
             inputFieldUserName.SetActive(true);
@@ -132,7 +138,14 @@ public class GameSystemManager : MonoBehaviour
         }
         else if (newState == GameStates.PlayingTicTacToe)
         {
+            ticTacToeController.SetActive(true);
             placeholderGameButton.SetActive(true);
+            ticTacToeController.GetComponent<TicTacToeController>().isMyTurn = true;
+        }
+        else if (newState == GameStates.WaitingTicTacToe)
+        {
+            ticTacToeController.SetActive(true);
+            ticTacToeController.GetComponent<TicTacToeController>().isMyTurn = false;
         }
     }
 }
@@ -143,4 +156,5 @@ public static class GameStates
     public const int MainMenu = 2;
     public const int WaitingForMatch = 3;
     public const int PlayingTicTacToe = 4;
+    public const int WaitingTicTacToe = 5;
 }
