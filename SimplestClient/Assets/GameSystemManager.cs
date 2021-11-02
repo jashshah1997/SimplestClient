@@ -93,8 +93,10 @@ public class GameSystemManager : MonoBehaviour
 
     private void PlaceholderGameButtonPressed()
     {
-        networkedClient.GetComponent<NetworkedClient>().SendMessageToHost(ClientToServerSignifiers.TicTacToePlay + "");
-
+        networkedClient.GetComponent<NetworkedClient>().SendMessageToHost(
+            ClientToServerSignifiers.TicTacToePlay + "," + 
+            ticTacToeController.GetComponent<TicTacToeController>().SerializeGameState());
+        ChangeGameState(GameStates.WaitingTicTacToe);
     }
 
     private void FindGameSessionButtonPressed()

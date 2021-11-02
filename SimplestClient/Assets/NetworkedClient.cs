@@ -155,6 +155,13 @@ public class NetworkedClient : MonoBehaviour
         else if (signifier == ServerToClientSignifiers.OpponentTicTacToePlay)
         {
             Debug.Log("our next item no longer beckons");
+
+            // Update the game state
+            string newGameState = csv[1];
+            ticTacToeController.GetComponent<TicTacToeController>().SetGameState(newGameState);
+
+            // Set the current player turn to active
+            gameSystemManager.GetComponent<GameSystemManager>().ChangeGameState(GameStates.PlayingTicTacToe);
         }
     }
 

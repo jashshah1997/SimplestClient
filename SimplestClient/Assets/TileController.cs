@@ -42,7 +42,7 @@ public class TileController : MonoBehaviour, IPointerClickHandler
         GetComponentInParent<TicTacToeController>().isMyTurn = false;
     }
 
-    private void ChangeTileState(int newState)
+    public void ChangeTileState(int newState)
     {
         if (newState == PlayerType.CROSS)
         {
@@ -53,6 +53,11 @@ public class TileController : MonoBehaviour, IPointerClickHandler
         {
             tileImage.sprite = circleImage;
             currentState = PlayerType.CIRCLE;
+        }
+        else
+        {
+            tileImage.sprite = emptyImage;
+            currentState = PlayerType.EMPTY;
         }
     }
 }
