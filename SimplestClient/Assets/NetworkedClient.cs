@@ -18,6 +18,7 @@ public class NetworkedClient : MonoBehaviour
     int ourClientID;
 
     GameObject gameSystemManager;
+    GameObject ticTacToeController;
 
     // Start is called before the first frame update
     void Start()
@@ -28,6 +29,8 @@ public class NetworkedClient : MonoBehaviour
         {
             if (go.name == "GameSystemManager")
                 gameSystemManager = go;
+            else if (go.name == "TicTacToeController")
+                ticTacToeController = go;
         }
             Connect();
     }
@@ -88,7 +91,7 @@ public class NetworkedClient : MonoBehaviour
             hostID = NetworkTransport.AddHost(topology, 0);
             Debug.Log("Socket open.  Host ID = " + hostID);
 
-            connectionID = NetworkTransport.Connect(hostID, "192.168.1.50", socketPort, 0, out error); // server is local on network
+            connectionID = NetworkTransport.Connect(hostID, "192.168.1.51", socketPort, 0, out error); // server is local on network
 
             if (error == 0)
             {
@@ -129,6 +132,15 @@ public class NetworkedClient : MonoBehaviour
         }
         else if (signifier == ServerToClientSignifiers.GameSessionStarted)
         {
+            int playerTypeResponse = int.Parse(csv[1]);
+
+            if (playerTypeResponse != SessionStartedResponses.CirclesPlayer && playerTypeResponse != SessionStartedResponses.CrossesPlayer)
+            {
+                Debug.LogWarning("Unknown player type received: " + playerTypeResponse);
+                return;
+            }
+
+            ticTacToeController.GetComponent<TicTacToeController>().SetPlayerType(playerTypeResponse);
             gameSystemManager.GetComponent<GameSystemManager>().ChangeGameState(GameStates.PlayingTicTacToe);
         }
         else if (signifier == ServerToClientSignifiers.OpponentTicTacToePlay)
@@ -158,6 +170,12 @@ public static class ServerToClientSignifiers
     public const int LoginResponse = 1;
     public const int GameSessionStarted = 2;
     public const int OpponentTicTacToePlay = 3;
+}
+
+public static class SessionStartedResponses
+{
+    public const int CirclesPlayer = 1;
+    public const int CrossesPlayer = 2;
 }
 
 public static class LoginResponses

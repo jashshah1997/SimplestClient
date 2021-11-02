@@ -58,6 +58,8 @@
   <ItemGroup>
     <Compile Include="Assets\GameSystemManager.cs" />
     <Compile Include="Assets\NetworkedClient.cs" />
+    <Compile Include="Assets\TileController.cs" />
+    <Compile Include="Assets\TicTacToeController.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">
