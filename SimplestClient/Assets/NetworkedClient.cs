@@ -151,6 +151,7 @@ public class NetworkedClient : MonoBehaviour
             {
                 gameSystemManager.GetComponent<GameSystemManager>().ChangeGameState(GameStates.WaitingTicTacToe);
             }
+            ticTacToeController.GetComponent<TicTacToeController>().ResetBoard();
         }
         else if (signifier == ServerToClientSignifiers.OpponentTicTacToePlay)
         {
@@ -160,8 +161,15 @@ public class NetworkedClient : MonoBehaviour
             string newGameState = csv[1];
             ticTacToeController.GetComponent<TicTacToeController>().SetGameState(newGameState);
 
-            // Set the current player turn to active
-            gameSystemManager.GetComponent<GameSystemManager>().ChangeGameState(GameStates.PlayingTicTacToe);
+            if (!gameSystemManager.GetComponent<GameSystemManager>().HandleGameFinish())
+            {
+                // Set the current player turn to active
+                gameSystemManager.GetComponent<GameSystemManager>().ChangeGameState(GameStates.PlayingTicTacToe);
+            }
+        }
+        else if (signifier == ServerToClientSignifiers.SessionTerminated)
+        {
+            gameSystemManager.GetComponent<GameSystemManager>().TerminateGame();
         }
     }
 
@@ -179,7 +187,7 @@ public static class ClientToServerSignifiers
     public const int CreateAccount = 2;
     public const int AddToGameSessionQueue = 3;
     public const int TicTacToePlay = 4;
-    public const int GameOver = 5;
+    public const int LeaveSession = 5;
 }
 
 public static class ServerToClientSignifiers
@@ -187,6 +195,7 @@ public static class ServerToClientSignifiers
     public const int LoginResponse = 1;
     public const int GameSessionStarted = 2;
     public const int OpponentTicTacToePlay = 3;
+    public const int SessionTerminated = 4;
 }
 
 public static class SessionStartedResponses

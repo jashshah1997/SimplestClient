@@ -15,7 +15,10 @@ public class GameSystemManager : MonoBehaviour
     GameObject placeholderGameButton;
     GameObject infoText1;
     GameObject infoText2;
+    GameObject gameOverText;
     GameObject ticTacToeController;
+    GameObject backToMainMenuButton;
+    int currentGameState = GameStates.Login;
 
     // Start is called before the first frame update
     void Start()
@@ -46,6 +49,10 @@ public class GameSystemManager : MonoBehaviour
                 infoText2 = go;
             else if (go.name == "TicTacToeController")
                 ticTacToeController = go;
+            else if (go.name == "GameOverText")
+                gameOverText = go;
+            else if (go.name == "BackToMainMenuButton")
+                backToMainMenuButton = go;
         }
 
         buttonSubmit.GetComponent<Button>().onClick.AddListener(SubmitButtonPressed);
@@ -53,7 +60,7 @@ public class GameSystemManager : MonoBehaviour
         toggleCreate.GetComponent<Toggle>().onValueChanged.AddListener(ToggleCreateValueChanged);
         findGameSessionButton.GetComponent<Button>().onClick.AddListener(FindGameSessionButtonPressed);
         placeholderGameButton.GetComponent<Button>().onClick.AddListener(PlaceholderGameButtonPressed);
-
+        backToMainMenuButton.GetComponent<Button>().onClick.AddListener(BackToMainMenuButtonPressed);
         ChangeGameState(GameStates.Login);
     }
 
@@ -61,6 +68,12 @@ public class GameSystemManager : MonoBehaviour
     void Update()
     {
         
+    }
+
+    private void BackToMainMenuButtonPressed()
+    {
+        networkedClient.GetComponent<NetworkedClient>().SendMessageToHost(ClientToServerSignifiers.LeaveSession + "");
+        ChangeGameState(GameStates.MainMenu);
     }
 
     private void SubmitButtonPressed()
@@ -93,20 +106,50 @@ public class GameSystemManager : MonoBehaviour
 
     private void PlaceholderGameButtonPressed()
     {
-        // Check if the game is finished
-        int winner = ticTacToeController.GetComponent<TicTacToeController>().CheckForWinner();
-        if (winner != PlayerType.EMPTY)
+        if (!HandleGameFinish())
         {
-            Debug.Log("The winner is: " + winner);
-            // TODO: DO something when player wins
+            // Game is not finished, wait for oponents turn
+            ChangeGameState(GameStates.WaitingTicTacToe);
         }
-
-        // TODO: Check if there is a draw
 
         networkedClient.GetComponent<NetworkedClient>().SendMessageToHost(
             ClientToServerSignifiers.TicTacToePlay + "," + 
             ticTacToeController.GetComponent<TicTacToeController>().SerializeGameState());
-        ChangeGameState(GameStates.WaitingTicTacToe);
+    }
+
+    public bool HandleGameFinish()
+    {
+        // Check if the game is finished
+        int winner = ticTacToeController.GetComponent<TicTacToeController>().CheckForWinner();
+        bool isDraw = ticTacToeController.GetComponent<TicTacToeController>().isDraw();
+        if (winner != PlayerType.EMPTY || isDraw)
+        {
+            Debug.Log("The winner is: " + winner);
+            ChangeGameState(GameStates.GameOver);
+
+            if (isDraw)
+            {
+                gameOverText.GetComponent<Text>().text = "Draw!";
+            }
+            else
+            {
+                gameOverText.GetComponent<Text>().text =
+                    winner == ticTacToeController.GetComponent<TicTacToeController>().myPlayerType ?
+                    "You won!" : "You lost!";
+            }
+            return true;
+        }
+        return false;
+    }
+
+    public void TerminateGame()
+    {
+        if (currentGameState == GameStates.WaitingTicTacToe || currentGameState == GameStates.PlayingTicTacToe)
+        {
+            ChangeGameState(GameStates.GameOver);
+        }
+
+        gameOverText.GetComponent<Text>().text = "Game Session Ended.";
     }
 
     private void FindGameSessionButtonPressed()
@@ -127,6 +170,8 @@ public class GameSystemManager : MonoBehaviour
         infoText1.SetActive(false);
         infoText2.SetActive(false);
         ticTacToeController.SetActive(false);
+        gameOverText.SetActive(false);
+        backToMainMenuButton.SetActive(false);
 
         if (newState == GameStates.Login)
         {
@@ -157,6 +202,15 @@ public class GameSystemManager : MonoBehaviour
             ticTacToeController.SetActive(true);
             ticTacToeController.GetComponent<TicTacToeController>().isMyTurn = false;
         }
+        else if (newState == GameStates.GameOver)
+        {
+            ticTacToeController.SetActive(true);
+            ticTacToeController.GetComponent<TicTacToeController>().isMyTurn = false;
+            gameOverText.SetActive(true);
+            backToMainMenuButton.SetActive(true);
+        }
+
+        currentGameState = newState;
     }
 }
 
@@ -167,4 +221,5 @@ public static class GameStates
     public const int WaitingForMatch = 3;
     public const int PlayingTicTacToe = 4;
     public const int WaitingTicTacToe = 5;
+    public const int GameOver = 6;
 }

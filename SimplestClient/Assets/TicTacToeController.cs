@@ -7,6 +7,7 @@ public class TicTacToeController : MonoBehaviour
 {
     private TileController[] tiles;
     public bool isMyTurn = false;
+    public int myPlayerType;
 
     // Start is called before the first frame update
     void Start()
@@ -53,6 +54,17 @@ public class TicTacToeController : MonoBehaviour
         return PlayerType.EMPTY;
     }
 
+    public bool isDraw()
+    {
+        string s = SerializeGameState();
+        Debug.Log(s);
+        foreach (char c in s)
+        {
+            if (int.Parse(c.ToString()) == PlayerType.EMPTY) return false;
+        }
+        return true;
+    }
+
     private int CheckForWinnerHelper(int idx1, int idx2, int idx3)
     {
         if (
@@ -68,9 +80,18 @@ public class TicTacToeController : MonoBehaviour
 
     public void SetPlayerType(int playerType)
     {
+        myPlayerType = playerType;
         foreach(TileController tile in tiles)
         {
             tile.playerType = playerType;
+        }
+    }
+
+    public void ResetBoard()
+    {
+        foreach (TileController tile in tiles)
+        {
+            tile.ChangeTileState(PlayerType.EMPTY);
         }
     }
 
