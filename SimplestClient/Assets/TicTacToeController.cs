@@ -24,6 +24,48 @@ public class TicTacToeController : MonoBehaviour
         
     }
 
+    public int CheckForWinner()
+    {
+        int check = CheckForWinnerHelper(0, 1, 2);
+        if (check != PlayerType.EMPTY) return check;
+
+        check = CheckForWinnerHelper(3, 4, 5);
+        if (check != PlayerType.EMPTY) return check;
+
+        check = CheckForWinnerHelper(6, 7, 8);
+        if (check != PlayerType.EMPTY) return check;
+
+        check = CheckForWinnerHelper(0, 3, 6);
+        if (check != PlayerType.EMPTY) return check;
+
+        check = CheckForWinnerHelper(1, 4, 7);
+        if (check != PlayerType.EMPTY) return check;
+
+        check = CheckForWinnerHelper(2, 5, 8);
+        if (check != PlayerType.EMPTY) return check;
+
+        check = CheckForWinnerHelper(0, 4, 8);
+        if (check != PlayerType.EMPTY) return check;
+
+        check = CheckForWinnerHelper(2, 4, 6);
+        if (check != PlayerType.EMPTY) return check;
+
+        return PlayerType.EMPTY;
+    }
+
+    private int CheckForWinnerHelper(int idx1, int idx2, int idx3)
+    {
+        if (
+            tiles[idx1].currentState == tiles[idx2].currentState && 
+            tiles[idx2].currentState == tiles[idx3].currentState &&
+            tiles[idx1].currentState != PlayerType.EMPTY)
+        {
+            return tiles[idx1].currentState;
+        }
+
+        return PlayerType.EMPTY;
+    }
+
     public void SetPlayerType(int playerType)
     {
         foreach(TileController tile in tiles)

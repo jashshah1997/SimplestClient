@@ -93,6 +93,16 @@ public class GameSystemManager : MonoBehaviour
 
     private void PlaceholderGameButtonPressed()
     {
+        // Check if the game is finished
+        int winner = ticTacToeController.GetComponent<TicTacToeController>().CheckForWinner();
+        if (winner != PlayerType.EMPTY)
+        {
+            Debug.Log("The winner is: " + winner);
+            // TODO: DO something when player wins
+        }
+
+        // TODO: Check if there is a draw
+
         networkedClient.GetComponent<NetworkedClient>().SendMessageToHost(
             ClientToServerSignifiers.TicTacToePlay + "," + 
             ticTacToeController.GetComponent<TicTacToeController>().SerializeGameState());
@@ -116,9 +126,7 @@ public class GameSystemManager : MonoBehaviour
         placeholderGameButton.SetActive(false);
         infoText1.SetActive(false);
         infoText2.SetActive(false);
-
-        // TODO: Uncomment this later
-        // ticTacToeController.SetActive(false);
+        ticTacToeController.SetActive(false);
 
         if (newState == GameStates.Login)
         {
