@@ -19,6 +19,9 @@ public class GameSystemManager : MonoBehaviour
     GameObject ticTacToeController;
     GameObject backToMainMenuButton;
     GameObject chatManager;
+    GameObject replayManager;
+    GameObject selectReplayButton;
+
     int currentGameState = GameStates.Login;
     public string currentUsername = "null";
 
@@ -57,6 +60,10 @@ public class GameSystemManager : MonoBehaviour
                 backToMainMenuButton = go;
             else if (go.name == "ChatManager")
                 chatManager = go;
+            else if (go.name == "ReplayManager")
+                replayManager = go;
+            else if (go.name == "SelectReplayButton")
+                selectReplayButton = go;
         }
 
         buttonSubmit.GetComponent<Button>().onClick.AddListener(SubmitButtonPressed);
@@ -65,6 +72,7 @@ public class GameSystemManager : MonoBehaviour
         findGameSessionButton.GetComponent<Button>().onClick.AddListener(FindGameSessionButtonPressed);
         placeholderGameButton.GetComponent<Button>().onClick.AddListener(PlaceholderGameButtonPressed);
         backToMainMenuButton.GetComponent<Button>().onClick.AddListener(BackToMainMenuButtonPressed);
+        selectReplayButton.GetComponent<Button>().onClick.AddListener(SelectReplayButtonPressed);
         ChangeGameState(GameStates.Login);
     }
 
@@ -72,6 +80,12 @@ public class GameSystemManager : MonoBehaviour
     void Update()
     {
         
+    }
+
+    private void SelectReplayButtonPressed()
+    {
+        string replayFilename = replayManager.GetComponent<ReplayManager>().GetReplayFilename();
+        Debug.Log(replayFilename + " selected!");
     }
 
     private void BackToMainMenuButtonPressed()
@@ -111,6 +125,8 @@ public class GameSystemManager : MonoBehaviour
 
     private void PlaceholderGameButtonPressed()
     {
+        ticTacToeController.GetComponent<TicTacToeController>().RecordState();
+
         if (!HandleGameFinish())
         {
             // Game is not finished, wait for oponents turn
@@ -183,6 +199,7 @@ public class GameSystemManager : MonoBehaviour
         gameOverText.SetActive(false);
         backToMainMenuButton.SetActive(false);
         chatManager.SetActive(false);
+        replayManager.SetActive(false);
 
         if (newState == GameStates.Login)
         {
@@ -196,6 +213,7 @@ public class GameSystemManager : MonoBehaviour
         }
         else if (newState == GameStates.MainMenu)
         {
+            replayManager.SetActive(true);
             findGameSessionButton.SetActive(true);
         }
         else if (newState == GameStates.WaitingForMatch)

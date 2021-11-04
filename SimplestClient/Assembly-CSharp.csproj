@@ -61,6 +61,7 @@
     <Compile Include="Assets\NetworkedClient.cs" />
     <Compile Include="Assets\TicTacToeController.cs" />
     <Compile Include="Assets\ChatManager.cs" />
+    <Compile Include="Assets\ReplayManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">

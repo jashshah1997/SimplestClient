@@ -2,12 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Text;
+using System.IO;
 
 public class TicTacToeController : MonoBehaviour
 {
     private TileController[] tiles;
     public bool isMyTurn = false;
     public int myPlayerType;
+    private string replayFilename = "null";
 
     // Start is called before the first frame update
     void Start()
@@ -23,6 +25,22 @@ public class TicTacToeController : MonoBehaviour
     void Update()
     {
         
+    }
+
+    public void RecordState()
+    {
+        StreamWriter sw;
+        if (File.Exists(replayFilename))
+        {
+            sw = new StreamWriter(replayFilename, true);
+        }
+        else
+        {
+            // Create the file if it doesn't exist
+            sw = new StreamWriter(replayFilename);
+        }
+        sw.WriteLine(SerializeGameState());
+        sw.Close();
     }
 
     public int CheckForWinner()
@@ -89,6 +107,7 @@ public class TicTacToeController : MonoBehaviour
 
     public void ResetBoard()
     {
+        replayFilename = Path.Combine(Application.persistentDataPath, System.DateTime.Now.ToString("yyyy-dd-M--HH-mm-ss") + ".replay");
         foreach (TileController tile in tiles)
         {
             tile.ChangeTileState(PlayerType.EMPTY);

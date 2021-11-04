@@ -159,6 +159,7 @@ public class NetworkedClient : MonoBehaviour
             // Update the game state
             string newGameState = csv[1];
             ticTacToeController.GetComponent<TicTacToeController>().SetGameState(newGameState);
+            ticTacToeController.GetComponent<TicTacToeController>().RecordState();
 
             if (!gameSystemManager.GetComponent<GameSystemManager>().HandleGameFinish())
             {
