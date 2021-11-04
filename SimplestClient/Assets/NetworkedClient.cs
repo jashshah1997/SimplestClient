@@ -151,7 +151,6 @@ public class NetworkedClient : MonoBehaviour
             {
                 gameSystemManager.GetComponent<GameSystemManager>().ChangeGameState(GameStates.WaitingTicTacToe);
             }
-            ticTacToeController.GetComponent<TicTacToeController>().ResetBoard();
         }
         else if (signifier == ServerToClientSignifiers.OpponentTicTacToePlay)
         {
@@ -171,6 +170,10 @@ public class NetworkedClient : MonoBehaviour
         {
             gameSystemManager.GetComponent<GameSystemManager>().TerminateGame();
         }
+        else if (signifier == ServerToClientSignifiers.PlayerMessage)
+        {
+            gameSystemManager.GetComponent<GameSystemManager>().HandlePlayerMessage(msg.Substring(2));
+        }
     }
 
     public bool IsConnected()
@@ -188,6 +191,7 @@ public static class ClientToServerSignifiers
     public const int AddToGameSessionQueue = 3;
     public const int TicTacToePlay = 4;
     public const int LeaveSession = 5;
+    public const int PlayerMessage = 6;
 }
 
 public static class ServerToClientSignifiers
@@ -196,6 +200,7 @@ public static class ServerToClientSignifiers
     public const int GameSessionStarted = 2;
     public const int OpponentTicTacToePlay = 3;
     public const int SessionTerminated = 4;
+    public const int PlayerMessage = 5;
 }
 
 public static class SessionStartedResponses

@@ -24,6 +24,14 @@ public class TileController : MonoBehaviour, IPointerClickHandler
 
     }
 
+    void Awake()
+    {
+        tileImage = GetComponent<Image>();
+        emptyImage = Resources.Load<Sprite>("Tile_Empty");
+        crossImage = Resources.Load<Sprite>("Tile_X");
+        circleImage = Resources.Load<Sprite>("Tile_O");
+    }
+
     // Update is called once per frame
     void Update()
     {

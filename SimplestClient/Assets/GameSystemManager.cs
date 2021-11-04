@@ -18,7 +18,9 @@ public class GameSystemManager : MonoBehaviour
     GameObject gameOverText;
     GameObject ticTacToeController;
     GameObject backToMainMenuButton;
+    GameObject chatManager;
     int currentGameState = GameStates.Login;
+    public string currentUsername = "null";
 
     // Start is called before the first frame update
     void Start()
@@ -53,6 +55,8 @@ public class GameSystemManager : MonoBehaviour
                 gameOverText = go;
             else if (go.name == "BackToMainMenuButton")
                 backToMainMenuButton = go;
+            else if (go.name == "ChatManager")
+                chatManager = go;
         }
 
         buttonSubmit.GetComponent<Button>().onClick.AddListener(SubmitButtonPressed);
@@ -92,6 +96,7 @@ public class GameSystemManager : MonoBehaviour
 
         Debug.Log(message_to_server);
         networkedClient.GetComponent<NetworkedClient>().SendMessageToHost(message_to_server);
+        currentUsername = username;
     }
 
     private void ToggleCreateValueChanged(bool newValue)
@@ -158,6 +163,11 @@ public class GameSystemManager : MonoBehaviour
         ChangeGameState(GameStates.WaitingForMatch);
     }
 
+    public void HandlePlayerMessage(string message)
+    {
+        chatManager.GetComponent<ChatManager>().AddChatMessage(message);
+    }
+
     public void ChangeGameState(int newState)
     {
         inputFieldUserName.SetActive(false);
@@ -172,6 +182,7 @@ public class GameSystemManager : MonoBehaviour
         ticTacToeController.SetActive(false);
         gameOverText.SetActive(false);
         backToMainMenuButton.SetActive(false);
+        chatManager.SetActive(false);
 
         if (newState == GameStates.Login)
         {
@@ -189,22 +200,28 @@ public class GameSystemManager : MonoBehaviour
         }
         else if (newState == GameStates.WaitingForMatch)
         {
-
+            // Reset everything while waiting
+            chatManager.GetComponent<ChatManager>().ClearMessages();
+            chatManager.GetComponent<ChatManager>().myPlayerName = currentUsername;
+            ticTacToeController.GetComponent<TicTacToeController>().ResetBoard();
         }
         else if (newState == GameStates.PlayingTicTacToe)
         {
             ticTacToeController.SetActive(true);
             placeholderGameButton.SetActive(true);
+            chatManager.SetActive(true);
             ticTacToeController.GetComponent<TicTacToeController>().isMyTurn = true;
         }
         else if (newState == GameStates.WaitingTicTacToe)
         {
             ticTacToeController.SetActive(true);
+            chatManager.SetActive(true);
             ticTacToeController.GetComponent<TicTacToeController>().isMyTurn = false;
         }
         else if (newState == GameStates.GameOver)
         {
             ticTacToeController.SetActive(true);
+            chatManager.SetActive(true);
             ticTacToeController.GetComponent<TicTacToeController>().isMyTurn = false;
             gameOverText.SetActive(true);
             backToMainMenuButton.SetActive(true);
