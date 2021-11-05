@@ -7,6 +7,8 @@ using System.IO;
 public class ReplayManager : MonoBehaviour
 {
     GameObject replayFileDropDown;
+    private int currentStateIndex = 0;
+    private List<string> gameStatesReplay;
 
     // Start is called before the first frame update
     void Start()
@@ -25,6 +27,52 @@ public class ReplayManager : MonoBehaviour
     {
         int index = replayFileDropDown.GetComponent<Dropdown>().value;
         return replayFileDropDown.GetComponent<Dropdown>().options[index].text;
+    }
+
+    public void LoadSelectedReplay()
+    {
+        gameStatesReplay = new List<string>();
+        string replayFilename = GetReplayFilename();
+        string path = Path.Combine(Application.persistentDataPath, replayFilename);
+
+        if (!File.Exists(path))
+        {
+            Debug.LogError("File : " + path + " doesn't exist!");
+            return;
+        }
+
+        StreamReader sr = new StreamReader(path);
+        string line;
+        while ((line = sr.ReadLine()) != null)
+        {
+            gameStatesReplay.Add(line);
+        }
+        currentStateIndex = -1;
+        sr.Close();
+    }
+
+    public string GetNextReplayState()
+    {
+        currentStateIndex++;
+        if (currentStateIndex >= gameStatesReplay.Count)
+        {
+            currentStateIndex--;
+            return null;
+        }
+
+        return gameStatesReplay[currentStateIndex];
+    }
+
+    public string GetPreviousReplayState()
+    {
+        currentStateIndex--;
+        if (currentStateIndex < 0)
+        {
+            currentStateIndex++;
+            return null;
+        }
+
+        return gameStatesReplay[currentStateIndex];
     }
 
     void RefreshOptions()

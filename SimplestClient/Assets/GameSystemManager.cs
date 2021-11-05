@@ -21,6 +21,8 @@ public class GameSystemManager : MonoBehaviour
     GameObject chatManager;
     GameObject replayManager;
     GameObject selectReplayButton;
+    GameObject replayNextMoveButton;
+    GameObject replayPreviousMoveButton;
 
     int currentGameState = GameStates.Login;
     public string currentUsername = "null";
@@ -64,6 +66,10 @@ public class GameSystemManager : MonoBehaviour
                 replayManager = go;
             else if (go.name == "SelectReplayButton")
                 selectReplayButton = go;
+            else if (go.name == "ReplayNextMoveButton")
+                replayNextMoveButton = go;
+            else if (go.name == "ReplayPreviousMoveButton")
+                replayPreviousMoveButton = go;
         }
 
         buttonSubmit.GetComponent<Button>().onClick.AddListener(SubmitButtonPressed);
@@ -73,6 +79,8 @@ public class GameSystemManager : MonoBehaviour
         placeholderGameButton.GetComponent<Button>().onClick.AddListener(PlaceholderGameButtonPressed);
         backToMainMenuButton.GetComponent<Button>().onClick.AddListener(BackToMainMenuButtonPressed);
         selectReplayButton.GetComponent<Button>().onClick.AddListener(SelectReplayButtonPressed);
+        replayNextMoveButton.GetComponent<Button>().onClick.AddListener(ReplayNextMoveButtonPressed);
+        replayPreviousMoveButton.GetComponent<Button>().onClick.AddListener(ReplayPreviousMoveButtonPressed);
         ChangeGameState(GameStates.Login);
     }
 
@@ -82,15 +90,40 @@ public class GameSystemManager : MonoBehaviour
         
     }
 
+    private void ReplayNextMoveButtonPressed()
+    {
+        string nextState = replayManager.GetComponent<ReplayManager>().GetNextReplayState();
+        if (nextState == null)
+        {
+            return;
+        }
+
+        ticTacToeController.GetComponent<TicTacToeController>().SetGameState(nextState);
+    }
+
+    private void ReplayPreviousMoveButtonPressed()
+    {
+        string previousState = replayManager.GetComponent<ReplayManager>().GetPreviousReplayState();
+        if (previousState == null)
+        {
+            return;
+        }
+
+        ticTacToeController.GetComponent<TicTacToeController>().SetGameState(previousState);
+    }
+
     private void SelectReplayButtonPressed()
     {
-        string replayFilename = replayManager.GetComponent<ReplayManager>().GetReplayFilename();
-        Debug.Log(replayFilename + " selected!");
+        replayManager.GetComponent<ReplayManager>().LoadSelectedReplay();
+        ChangeGameState(GameStates.ReplayScreen);
     }
 
     private void BackToMainMenuButtonPressed()
     {
-        networkedClient.GetComponent<NetworkedClient>().SendMessageToHost(ClientToServerSignifiers.LeaveSession + "");
+        if (currentGameState != GameStates.ReplayScreen)
+        {
+            networkedClient.GetComponent<NetworkedClient>().SendMessageToHost(ClientToServerSignifiers.LeaveSession + "");
+        }
         ChangeGameState(GameStates.MainMenu);
     }
 
@@ -200,6 +233,8 @@ public class GameSystemManager : MonoBehaviour
         backToMainMenuButton.SetActive(false);
         chatManager.SetActive(false);
         replayManager.SetActive(false);
+        replayNextMoveButton.SetActive(false);
+        replayPreviousMoveButton.SetActive(false);
 
         if (newState == GameStates.Login)
         {
@@ -244,6 +279,16 @@ public class GameSystemManager : MonoBehaviour
             gameOverText.SetActive(true);
             backToMainMenuButton.SetActive(true);
         }
+        else if (newState == GameStates.ReplayScreen)
+        {
+            ticTacToeController.GetComponent<TicTacToeController>().ResetBoard();
+            ticTacToeController.SetActive(true);
+            backToMainMenuButton.SetActive(true);
+            replayNextMoveButton.SetActive(true);
+            replayPreviousMoveButton.SetActive(true);
+            gameOverText.GetComponent<Text>().text = "TicTacToe Replay";
+            gameOverText.SetActive(true);
+        }
 
         currentGameState = newState;
     }
@@ -257,4 +302,5 @@ public static class GameStates
     public const int PlayingTicTacToe = 4;
     public const int WaitingTicTacToe = 5;
     public const int GameOver = 6;
+    public const int ReplayScreen = 7;
 }
