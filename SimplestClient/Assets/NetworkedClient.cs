@@ -175,6 +175,28 @@ public class NetworkedClient : MonoBehaviour
         {
             gameSystemManager.GetComponent<GameSystemManager>().HandlePlayerMessage(msg.Substring(2));
         }
+        else if (signifier == ServerToClientSignifiers.SessionIDResponse)
+        {
+            List<string> sessionIDs = new List<string>();
+            for (int i = 1; i < csv.Length; i++)
+            {
+                if (csv[i].Length == 0)
+                    continue;
+                sessionIDs.Add(csv[i]);
+            }
+            gameSystemManager.GetComponent<GameSystemManager>().UpdateSessionIDs(sessionIDs);
+        }
+        else if (signifier == ServerToClientSignifiers.SpectateStarted)
+        {
+            string newGameState = csv[1];
+            gameSystemManager.GetComponent<GameSystemManager>().ChangeGameState(GameStates.Spectator);
+            ticTacToeController.GetComponent<TicTacToeController>().SetGameState(newGameState);
+        }
+        else if (signifier == ServerToClientSignifiers.SpectatorUpdate)
+        {
+            string newGameState = csv[1];
+            ticTacToeController.GetComponent<TicTacToeController>().SetGameState(newGameState);
+        }
     }
 
     public bool IsConnected()
@@ -193,6 +215,8 @@ public static class ClientToServerSignifiers
     public const int TicTacToePlay = 4;
     public const int LeaveSession = 5;
     public const int PlayerMessage = 6;
+    public const int RequestSessionIDs = 7;
+    public const int SpectateSession = 8;
 }
 
 public static class ServerToClientSignifiers
@@ -202,6 +226,9 @@ public static class ServerToClientSignifiers
     public const int OpponentTicTacToePlay = 3;
     public const int SessionTerminated = 4;
     public const int PlayerMessage = 5;
+    public const int SessionIDResponse = 6;
+    public const int SpectateStarted = 7;
+    public const int SpectatorUpdate = 8;
 }
 
 public static class SessionStartedResponses

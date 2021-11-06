@@ -16,6 +16,7 @@ public class ChatManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        ClearMessages();
         AddChatMessage("Welcome to Multiplayer TicTacToe!");
 
         messageSendButton = GameObject.Find("MessageSendButton");
@@ -25,10 +26,11 @@ public class ChatManager : MonoBehaviour
         messageSendButton.GetComponent<Button>().onClick.AddListener(MessageSendButtonPressed);
     }
 
-    private void Awake()
+    void Awake()
     {
         ClearMessages();
         AddChatMessage("Welcome to Multiplayer TicTacToe!");
+
         messageSendButton = GameObject.Find("MessageSendButton");
         messageInputField = GameObject.Find("MessageInputField");
     }

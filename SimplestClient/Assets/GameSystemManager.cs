@@ -15,6 +15,7 @@ public class GameSystemManager : MonoBehaviour
     GameObject placeholderGameButton;
     GameObject infoText1;
     GameObject infoText2;
+    GameObject infoText3;
     GameObject gameOverText;
     GameObject ticTacToeController;
     GameObject backToMainMenuButton;
@@ -23,8 +24,12 @@ public class GameSystemManager : MonoBehaviour
     GameObject selectReplayButton;
     GameObject replayNextMoveButton;
     GameObject replayPreviousMoveButton;
+    GameObject availableSessionsDropdown;
+    GameObject spectateSessionButton;
+    GameObject refreshAvailableSessionsButton;
 
     int currentGameState = GameStates.Login;
+    int currentSpectatingSession = -1;
     public string currentUsername = "null";
 
     // Start is called before the first frame update
@@ -54,6 +59,8 @@ public class GameSystemManager : MonoBehaviour
                 infoText1 = go;
             else if (go.name == "InfoText2")
                 infoText2 = go;
+            else if (go.name == "InfoText3")
+                infoText3 = go;
             else if (go.name == "TicTacToeController")
                 ticTacToeController = go;
             else if (go.name == "GameOverText")
@@ -70,6 +77,12 @@ public class GameSystemManager : MonoBehaviour
                 replayNextMoveButton = go;
             else if (go.name == "ReplayPreviousMoveButton")
                 replayPreviousMoveButton = go;
+            else if (go.name == "AvailableSessionsDropdown")
+                availableSessionsDropdown = go;
+            else if (go.name == "SpectateSessionButton")
+                spectateSessionButton = go;
+            else if (go.name == "RefreshAvailableSessionsButton")
+                refreshAvailableSessionsButton = go;
         }
 
         buttonSubmit.GetComponent<Button>().onClick.AddListener(SubmitButtonPressed);
@@ -81,6 +94,8 @@ public class GameSystemManager : MonoBehaviour
         selectReplayButton.GetComponent<Button>().onClick.AddListener(SelectReplayButtonPressed);
         replayNextMoveButton.GetComponent<Button>().onClick.AddListener(ReplayNextMoveButtonPressed);
         replayPreviousMoveButton.GetComponent<Button>().onClick.AddListener(ReplayPreviousMoveButtonPressed);
+        spectateSessionButton.GetComponent<Button>().onClick.AddListener(SpectateSessionButtonPressed);
+        refreshAvailableSessionsButton.GetComponent<Button>().onClick.AddListener(RefreshAvailableSessionsButtonPressed);
         ChangeGameState(GameStates.Login);
     }
 
@@ -88,6 +103,28 @@ public class GameSystemManager : MonoBehaviour
     void Update()
     {
         
+    }
+
+    public void UpdateSessionIDs(List<string> sessionIds)
+    {
+        availableSessionsDropdown.GetComponent<Dropdown>().ClearOptions();
+        availableSessionsDropdown.GetComponent<Dropdown>().AddOptions(sessionIds);
+    }
+
+    private void RefreshAvailableSessionsButtonPressed()
+    {
+        networkedClient.GetComponent<NetworkedClient>().SendMessageToHost(ClientToServerSignifiers.RequestSessionIDs + "");
+    }
+
+    private void SpectateSessionButtonPressed()
+    {
+        if (availableSessionsDropdown.GetComponent<Dropdown>().options.Count == 0)
+            return;
+
+        int index = availableSessionsDropdown.GetComponent<Dropdown>().value;
+        string sessionId = availableSessionsDropdown.GetComponent<Dropdown>().options[index].text;
+        currentSpectatingSession = int.Parse(sessionId);
+        networkedClient.GetComponent<NetworkedClient>().SendMessageToHost(ClientToServerSignifiers.SpectateSession + "," + sessionId);
     }
 
     private void ReplayNextMoveButtonPressed()
@@ -122,7 +159,7 @@ public class GameSystemManager : MonoBehaviour
     {
         if (currentGameState != GameStates.ReplayScreen)
         {
-            networkedClient.GetComponent<NetworkedClient>().SendMessageToHost(ClientToServerSignifiers.LeaveSession + "");
+            networkedClient.GetComponent<NetworkedClient>().SendMessageToHost(ClientToServerSignifiers.LeaveSession + ",");
         }
         ChangeGameState(GameStates.MainMenu);
     }
@@ -228,6 +265,7 @@ public class GameSystemManager : MonoBehaviour
         placeholderGameButton.SetActive(false);
         infoText1.SetActive(false);
         infoText2.SetActive(false);
+        infoText3.SetActive(false);
         ticTacToeController.SetActive(false);
         gameOverText.SetActive(false);
         backToMainMenuButton.SetActive(false);
@@ -235,6 +273,9 @@ public class GameSystemManager : MonoBehaviour
         replayManager.SetActive(false);
         replayNextMoveButton.SetActive(false);
         replayPreviousMoveButton.SetActive(false);
+        availableSessionsDropdown.SetActive(false);
+        spectateSessionButton.SetActive(false);
+        refreshAvailableSessionsButton.SetActive(false);
 
         if (newState == GameStates.Login)
         {
@@ -248,14 +289,21 @@ public class GameSystemManager : MonoBehaviour
         }
         else if (newState == GameStates.MainMenu)
         {
+            chatManager.GetComponent<ChatManager>().myPlayerName = currentUsername;
+
+            infoText3.SetActive(true);
             replayManager.SetActive(true);
             findGameSessionButton.SetActive(true);
+
+            availableSessionsDropdown.GetComponent<Dropdown>().ClearOptions();
+            availableSessionsDropdown.SetActive(true);
+            spectateSessionButton.SetActive(true);
+            refreshAvailableSessionsButton.SetActive(true);
         }
         else if (newState == GameStates.WaitingForMatch)
         {
             // Reset everything while waiting
             chatManager.GetComponent<ChatManager>().ClearMessages();
-            chatManager.GetComponent<ChatManager>().myPlayerName = currentUsername;
             ticTacToeController.GetComponent<TicTacToeController>().ResetBoard();
         }
         else if (newState == GameStates.PlayingTicTacToe)
@@ -289,6 +337,17 @@ public class GameSystemManager : MonoBehaviour
             gameOverText.GetComponent<Text>().text = "TicTacToe Replay";
             gameOverText.SetActive(true);
         }
+        else if (newState == GameStates.Spectator)
+        {
+            ticTacToeController.GetComponent<TicTacToeController>().ResetBoard();
+            ticTacToeController.SetActive(true);
+            ticTacToeController.GetComponent<TicTacToeController>().isMyTurn = false;
+
+            backToMainMenuButton.SetActive(true);
+            chatManager.SetActive(true);
+            gameOverText.GetComponent<Text>().text = "Spectating TicTacToe Session " + currentSpectatingSession;
+            gameOverText.SetActive(true);
+        }
 
         currentGameState = newState;
     }
@@ -303,4 +362,5 @@ public static class GameStates
     public const int WaitingTicTacToe = 5;
     public const int GameOver = 6;
     public const int ReplayScreen = 7;
+    public const int Spectator = 8;
 }
