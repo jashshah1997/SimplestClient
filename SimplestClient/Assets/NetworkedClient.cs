@@ -17,6 +17,9 @@ public class NetworkedClient : MonoBehaviour
     bool isConnected = false;
     int ourClientID;
 
+    private int[] keyValues;
+    private bool[] isKeyPressed;
+
     GameObject gameSystemManager;
     GameObject ticTacToeController;
 
@@ -33,13 +36,32 @@ public class NetworkedClient : MonoBehaviour
                 ticTacToeController = go;
         }
             Connect();
+
+        keyValues = (int[])System.Enum.GetValues(typeof(KeyCode));
+        isKeyPressed = new bool[keyValues.Length];
     }
+
 
     // Update is called once per frame
     void Update()
     {
-        // if(Input.GetKeyDown(KeyCode.S))
-        //    SendMessageToHost("Hello from client");
+        for (int i = 0; i < keyValues.Length; i++)
+        {
+            // Check if key is pressed
+            bool check = Input.GetKey((KeyCode)keyValues[i]);
+
+            // Detect rising edge for key press
+            if (!isKeyPressed[i] && check)
+            {
+                SendMessageToHost(ClientToServerSignifiers.KeypressMetrics + "," + keyValues[i]);
+                isKeyPressed[i] = true;
+            }
+            // Detect falling edge for key release
+            else if (isKeyPressed[i] && !check)
+            {
+                isKeyPressed[i] = false;
+            }
+        }
 
         UpdateNetworkConnection();
     }
@@ -217,6 +239,7 @@ public static class ClientToServerSignifiers
     public const int PlayerMessage = 6;
     public const int RequestSessionIDs = 7;
     public const int SpectateSession = 8;
+    public const int KeypressMetrics = 9;
 }
 
 public static class ServerToClientSignifiers
